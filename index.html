@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Portfolio — Steve (Ngahan Donal Steve)</title>
+    <meta name="description" content="Portfolio de NGAHAN Donal Steve — Cybersécurité, Compliance as Code, bastion d'accès, ISO 27001." />
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      // Optionally customize Tailwind
+      tailwind.config = {
+        theme: { extend: {} },
+        darkMode: 'media'
+      };
+    </script>
+    <!-- React 18 UMD + Babel for JSX in-browser (no build step) -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  </head>
+  <body class="antialiased bg-white text-gray-900">
+    <div id="root"></div>
+    <!-- Your app -->
+    <script type="text/babel" data-type="module" src="app.jsx"></script>
+  </body>
+</html>
