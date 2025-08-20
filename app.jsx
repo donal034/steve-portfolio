@@ -39,7 +39,7 @@ const data = {
       github: "#",
       x: "#",
       phone: "#",
-      cv: "#", // ex: /cv/Steve_Ngahan.pdf
+      cv: "./CV_Steve_Ngahan_2024.pdf", // ex: /cv/Steve_Ngahan.pdf
     },
     blurb:
       "Je sécurise, j’automatise et j’industrialise. Focus: Compliance as Code, bastion d’accès, audits ISO 27001, et IA appliquée à la défense."
