@@ -33,13 +33,13 @@ const data = {
     nickname: "Steve",
     title: "Apprenti Architecte Systèmes, Réseaux & Cybersécurité — Aspirant CISO",
     location: "Île-de-France, France",
-    email: "donalngahan466@gmail.fr",
+    email: "donalngahan466@gmail.com",
     links: {
       linkedin: "https://www.linkedin.com/in/donal-ngahan/",
-      github: "donal034",
+      github: "https://github.com/donal034",
       x: "#",
       phone: "+33 745308653",
-      cv: "./CV_Steve_Ngahan_2024.pdf", // ex: /cv/Steve_Ngahan.pdf
+      cv: "./CV_Steve_Ngahan_2024.pdf",
     },
     blurb:
       "Je sécurise, j’automatise et j’industrialise. Focus: Compliance as Code, bastion d’accès, audits ISO 27001, et IA appliquée à la défense."
@@ -226,10 +226,10 @@ function PortfolioSteve() {
                 <a href={`mailto:${data.identity.email}`} className="inline-flex items-center rounded-2xl bg-black text-white dark:bg-white dark:text-black px-4 py-2 text-sm font-medium hover:opacity-90 transition">
                   Écrire un e‑mail
                 </a>
-                <a href={data.identity.links.linkedin} className="inline-flex items-center rounded-2xl border px-4 py-2 text-sm border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5 transition">
+                <a href={data.identity.links.linkedin} target="_blank" rel="noopener noreferrer" className="inline-flex items-center rounded-2xl border px-4 py-2 text-sm border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5 transition">
                   LinkedIn
                 </a>
-                <a href={data.identity.links.github} className="inline-flex items-center rounded-2xl border px-4 py-2 text-sm border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5 transition">
+                <a href={data.identity.links.github} target="_blank" rel="noopener noreferrer" className="inline-flex items-center rounded-2xl border px-4 py-2 text-sm border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5 transition">
                   GitHub
                 </a>
               </div>
@@ -372,8 +372,8 @@ function PortfolioSteve() {
                 <p className="mt-2"><span className="font-medium">Disponibilité:</span> Ouvert aux opportunités, alternance / missions.</p>
               </div>
               <div className="mt-6 flex flex-wrap gap-3">
-                <a href={data.identity.links.linkedin} className="inline-flex items-center rounded-xl border px-3 py-1.5 text-sm border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5 transition">LinkedIn</a>
-                <a href={data.identity.links.github} className="inline-flex items-center rounded-xl border px-3 py-1.5 text-sm border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5 transition">GitHub</a>
+                <a href={data.identity.links.linkedin} target="_blank" rel="noopener noreferrer" className="inline-flex items-center rounded-xl border px-3 py-1.5 text-sm border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5 transition">LinkedIn</a>
+                <a href={data.identity.links.github} target="_blank" rel="noopener noreferrer" className="inline-flex items-center rounded-xl border px-3 py-1.5 text-sm border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5 transition">GitHub</a>
                 <a href={data.identity.links.cv} className="inline-flex items-center rounded-xl border px-3 py-1.5 text-sm border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5 transition">CV (PDF)</a>
               </div>
             </div>
