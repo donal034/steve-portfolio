@@ -33,12 +33,12 @@ const data = {
     nickname: "Steve",
     title: "Apprenti Architecte Systèmes, Réseaux & Cybersécurité — Aspirant CISO",
     location: "Île-de-France, France",
-    email: "donal.ngahan@dompro.fr",
+    email: "donalngahan466@gmail.fr",
     links: {
-      linkedin: "#",
-      github: "#",
+      linkedin: "https://www.linkedin.com/in/donal-ngahan/",
+      github: "donal034",
       x: "#",
-      phone: "#",
+      phone: "+33 745308653",
       cv: "./CV_Steve_Ngahan_2024.pdf", // ex: /cv/Steve_Ngahan.pdf
     },
     blurb:
