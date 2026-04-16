@@ -17,9 +17,10 @@ const css = `
     --cyan-dim: rgba(0,240,200,0.15);
     --cyan-glow:rgba(0,240,200,0.35);
     --text:     #e2e8f0;
-    --text-dim: #64748b;
-    --text-mid: #94a3b8;
+    --text-dim: #8ea0b8;
+    --text-mid: #c7d2e0;
     --white:    #f8fafc;
+    --panel:    rgba(13,20,33,0.92);
     --font-mono: 'Space Mono', monospace;
     --font-head: 'Syne', sans-serif;
     --r: 12px;
@@ -35,6 +36,20 @@ const css = `
     font-size: 16px;
     line-height: 1.6;
     overflow-x: hidden;
+  }
+  #root, main { background: var(--bg); min-height: 100vh; }
+
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 3px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+      animation: none !important;
+      transition: none !important;
+    }
   }
 
   /* Scrollbar */
@@ -89,7 +104,27 @@ const css = `
     transform-origin: left; transition: transform 0.2s;
   }
   .nav-links a:hover::after { transform: scaleX(1); }
-  @media (max-width: 600px) { .nav-links { display: none; } }
+
+  @media (max-width: 600px) {
+    .nav {
+      height: auto;
+      min-height: 58px;
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 10px;
+      padding-top: 12px;
+      padding-bottom: 12px;
+    }
+    .nav-links {
+      display: flex;
+      width: 100%;
+      overflow-x: auto;
+      gap: 18px;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+    }
+    .nav-links::-webkit-scrollbar { display: none; }
+  }
 
   /* SECTIONS */
   section { position: relative; z-index: 1; }
@@ -105,8 +140,10 @@ const css = `
     padding-top: 58px;
   }
   @media (max-width: 900px) {
-    .hero { grid-template-columns: 1fr; padding-top: 80px; }
-    .hero-photo { display: none; }
+    .hero { grid-template-columns: 1fr; padding-top: 96px; min-height: auto; }
+    .hero-photo { display: block; max-width: 260px; margin: 16px auto 0; }
+    .photo-frame { width: 260px; height: 300px; }
+    .photo-badge { right: -8px; bottom: -10px; }
   }
 
   .hero-kicker {
@@ -282,11 +319,12 @@ const css = `
     color: var(--white);
     line-height: 1.1;
     letter-spacing: -0.02em;
+    text-shadow: 0 0 1px rgba(0,0,0,0.45);
   }
   .section-sub {
     margin-top: 12px;
     color: var(--text-mid);
-    max-width: 580px;
+    max-width: 680px;
     font-size: 15px;
     line-height: 1.7;
   }
@@ -294,12 +332,13 @@ const css = `
 
   /* CARD */
   .card {
-    background: var(--bg2);
+    background: var(--panel);
     border: 1px solid var(--border);
     border-radius: var(--r2);
     padding: 24px;
     transition: border-color 0.2s, transform 0.2s;
     position: relative; overflow: hidden;
+    backdrop-filter: blur(6px);
   }
   .card::before {
     content: '';
@@ -366,7 +405,17 @@ const css = `
     content: '→'; color: var(--cyan); flex-shrink: 0; margin-top: 1px;
   }
   .project-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
-  .project-links { display: flex; gap: 10px; margin-top: auto; }
+  .project-links { display: flex; gap: 10px; margin-top: auto; flex-wrap: wrap; }
+  .btn-disabled {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.03);
+    color: var(--text-dim);
+    font-family: var(--font-mono); font-size: 11px;
+    letter-spacing: 0.08em;
+    padding: 8px 16px; border-radius: var(--r);
+    border: 1px dashed var(--border2); cursor: default;
+    text-decoration: none;
+  }
 
   /* TIMELINE */
   .timeline { position: relative; }
@@ -438,6 +487,9 @@ const css = `
   }
 
   /* CONTACT */
+  .two-col-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; }
+  @media (max-width: 880px) { .two-col-layout { grid-template-columns: 1fr; gap: 40px; } }
+
   .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
   @media (max-width: 700px) { .contact-grid { grid-template-columns: 1fr; } }
 
@@ -504,7 +556,7 @@ const data = {
   identity: {
     fullname: "NGAHAN Donal Steve",
     nickname: "Steve",
-    title: "Ingénieur Systèmes, Réseaux & Cybersécurité",
+    title: "Technicien Informatique · Candidat Ingénieur Cybersécurité",
     location: "Paris, Île-de-France, France",
     email: "donalngahan466@gmail.com",
     phone: "+33 7 45 30 86 53",
@@ -513,7 +565,7 @@ const data = {
       github: "https://github.com/donal034",
       cv: "./DONAL-STEVE-NGAHAN-CV.pdf",
     },
-    blurb: "Ingénieur en cybersécurité diplômé d'un Master à HETIC Paris — 2 ans d'expérience en infrastructures systèmes/réseaux et sécurité opérationnelle. Je sécurise, j'automatise et j'industrialise.",
+    blurb: "Actuellement en CDI comme Technicien Informatique, je recherche un CDI en ingénierie cybersécurité. Profil orienté sécurité opérationnelle, infrastructures, durcissement, supervision et automatisation des contrôles.",
     photo: "./pp.png",
   },
   skills: [
@@ -643,16 +695,15 @@ const data = {
   experience: [
     {
       org: "DOMPRO",
-      role: "Apprenti Architecte Systèmes, Réseaux & Cybersécurité",
-      period: "09/2024 – 11/2025 · Paris, France",
+      role: "Technicien Informatique (CDI)",
+      period: "03/2026 – Aujourd'hui · Paris, France",
       bullets: [
-        "Administration d'infrastructures Windows Server (AD, DNS, DHCP, GPO, WSUS)",
-        "Mise en place d'un bastion d'accès (Guacamole) avec journalisation des sessions",
-        "Gestion sécurité périmétrique : VPN, pare-feu Palo Alto, segmentation réseau MPLS",
-        "Administration et supervision VMware vSphere / Hyper-V",
-        "Contribution à la PSSI 2025, alignement ISO 27001, renforcement des politiques",
-        "Déploiement GLPI, supervision Grafana / Prometheus",
-        "Support niveau 2 et rédaction de procédures techniques",
+        "Administration et support des environnements Windows, postes utilisateurs et services d'infrastructure",
+        "Traitement des incidents, demandes et escalades avec une logique qualité de service",
+        "Contribution au durcissement des accès, au suivi des vulnérabilités et à la sécurité opérationnelle",
+        "Supervision de l'infrastructure et participation aux contrôles techniques de sécurité",
+        "Gestion des environnements AD, DNS, DHCP, GPO, VMware et outillage IT",
+        "Rédaction de procédures, support utilisateurs et amélioration continue de l'exploitation",
       ],
     },
     {
@@ -685,7 +736,7 @@ const data = {
   certifications: [
     { name: "AWS Solutions Architect", status: "En préparation" },
     { name: "Microsoft 365", status: "En préparation" },
-    { name: "TOEFL", status: "Objectif 2025" },
+    { name: "Anglais professionnel", status: "En progression" },
   ],
 };
 
@@ -726,7 +777,7 @@ function Hero() {
         <div className="hero">
           <div>
             <div className="hero-kicker">
-              <span className="status-dot">Disponible · CDI</span>
+              <span className="status-dot">En poste · Ouvert aux opportunités CDI en cybersécurité</span>
             </div>
             <h1 className="hero-name">
               Donal<br /><span className="accent">Steve</span><br />Ngahan
@@ -737,24 +788,25 @@ function Hero() {
             </p>
             <p className="hero-blurb">{data.identity.blurb}</p>
             <div className="hero-badges">
-              <span className="badge">ISO 27001</span>
+              <span className="badge">CDI actuel · Technicien Informatique</span>
+              <span className="badge">Cible · Ingénieur Cybersécurité</span>
               <span className="badge">SIEM / SOC</span>
               <span className="badge">Bastion d'accès</span>
+              <span className="badge">ISO 27001</span>
               <span className="badge">Compliance as Code</span>
-              <span className="badge">Pentest</span>
             </div>
             <div className="hero-ctas">
-              <a href={`mailto:${data.identity.email}`} className="btn-primary">
-                ✉ Écrire un e-mail
+              <a href={`mailto:${data.identity.email}`} className="btn-primary" aria-label="Envoyer un e-mail à Steve">
+                ✉ Me contacter
               </a>
-              <a href={data.identity.links.linkedin} target="_blank" rel="noopener noreferrer" className="btn-ghost">
+              <a href={data.identity.links.linkedin} target="_blank" rel="noopener noreferrer" className="btn-ghost" aria-label="Ouvrir le profil LinkedIn de Steve">
                 LinkedIn ↗
               </a>
-              <a href={data.identity.links.github} target="_blank" rel="noopener noreferrer" className="btn-ghost">
+              <a href={data.identity.links.github} target="_blank" rel="noopener noreferrer" className="btn-ghost" aria-label="Ouvrir le GitHub de Steve">
                 GitHub ↗
               </a>
-              <a href={data.identity.links.cv} className="btn-ghost">
-                CV (PDF) ↓
+              <a href={data.identity.links.cv} className="btn-ghost" aria-label="Télécharger le CV de Steve">
+                Télécharger mon CV ↓
               </a>
             </div>
           </div>
@@ -781,7 +833,7 @@ function Skills() {
         <div className="section-header reveal">
           <div className="section-kicker">Compétences</div>
           <h2 className="section-title">Ce que je maîtrise</h2>
-          <p className="section-sub">Un mix opérationnel (bastion, réseau, supervision) et gouvernance (ISO 27001, PSSI), avec une forte culture d'automatisation et de sécurité défensive.</p>
+          <p className="section-sub">Compétences construites entre administration système, sécurité opérationnelle, supervision, réseau, gouvernance et automatisation. Positionnement actuel : évoluer vers un CDI d'ingénieur cybersécurité.</p>
         </div>
         <div className="skills-grid">
           {data.skills.map((g, i) => (
@@ -810,7 +862,7 @@ function Projects() {
         <div className="section-header reveal">
           <div className="section-kicker">Projets</div>
           <h2 className="section-title">Travaux & Réalisations</h2>
-          <p className="section-sub">Projets menés en entreprise, en académique et en autodidacte. Détails et dépôts disponibles sur demande.</p>
+          <p className="section-sub">Projets menés en entreprise, en académique et en autodidacte. Les réalisations montrent mon niveau technique actuel et ma capacité à évoluer vers un poste d'ingénieur cybersécurité.</p>
         </div>
 
         {/* Filter bar */}
@@ -858,8 +910,16 @@ function Projects() {
                 {p.tags.map(t => <span className="tag" key={t}>{t}</span>)}
               </div>
               <div className="project-links">
-                <a href={p.links.demo} className="btn-ghost" style={{ fontSize: '11px', padding: '8px 16px' }}>Aperçu</a>
-                <a href={p.links.repo} className="btn-ghost" style={{ fontSize: '11px', padding: '8px 16px' }}>Code</a>
+                {p.links.demo !== "#" ? (
+                  <a href={p.links.demo} className="btn-ghost" style={{ fontSize: '11px', padding: '8px 16px' }}>Aperçu</a>
+                ) : (
+                  <span className="btn-disabled">Démo sur demande</span>
+                )}
+                {p.links.repo !== "#" ? (
+                  <a href={p.links.repo} className="btn-ghost" style={{ fontSize: '11px', padding: '8px 16px' }}>Code</a>
+                ) : (
+                  <span className="btn-disabled">Code sur demande</span>
+                )}
               </div>
             </div>
           ))}
@@ -879,7 +939,7 @@ function Experience() {
           <h2 className="section-title">Expériences & Formation</h2>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '64px' }}>
+        <div className="two-col-layout">
 
           {/* Experience */}
           <div>
@@ -947,7 +1007,7 @@ function Contact() {
         <div className="section-header reveal">
           <div className="section-kicker">Contact</div>
           <h2 className="section-title">Travaillons ensemble</h2>
-          <p className="section-sub">Un besoin de sécurisation, d'audit ou d'industrialisation de la sécurité ? Je suis disponible pour des opportunités en CDI ou missions.</p>
+          <p className="section-sub">Je suis actuellement en CDI comme Technicien Informatique et j'étudie des opportunités de CDI en ingénierie cybersécurité, sécurité opérationnelle, Blue Team, GRC technique ou ingénierie sécurité.</p>
         </div>
 
         <div className="contact-grid">
@@ -966,7 +1026,7 @@ function Contact() {
             </div>
             <div className="contact-row">
               <span className="contact-label">Disponibilité</span>
-              <span className="contact-val"><span className="status-dot">Ouvert aux opportunités · CDI</span></span>
+              <span className="contact-val"><span className="status-dot">En poste · Ouvert aux opportunités CDI en cybersécurité</span></span>
             </div>
             <div className="contact-row">
               <span className="contact-label">Langues</span>
@@ -975,7 +1035,7 @@ function Contact() {
             <div style={{ display: 'flex', gap: '10px', marginTop: '24px', flexWrap: 'wrap' }}>
               <a href={data.identity.links.linkedin} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ fontSize: '11px', padding: '10px 20px' }}>LinkedIn ↗</a>
               <a href={data.identity.links.github} target="_blank" rel="noopener noreferrer" className="btn-ghost" style={{ fontSize: '11px', padding: '10px 20px' }}>GitHub ↗</a>
-              <a href={data.identity.links.cv} className="btn-ghost" style={{ fontSize: '11px', padding: '10px 20px' }}>CV PDF ↓</a>
+              <a href={data.identity.links.cv} className="btn-ghost" style={{ fontSize: '11px', padding: '10px 20px' }}>Télécharger mon CV ↓</a>
             </div>
           </div>
 
@@ -1002,7 +1062,7 @@ function Contact() {
 function Footer() {
   return (
     <footer>
-      <span>© {new Date().getFullYear()} NGAHAN Donal Steve — Tous droits réservés.</span>
+      <span>© {new Date().getFullYear()} Steve Ngahan — Portfolio cybersécurité.</span>
       <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
         <a href={data.identity.links.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn</a>
         <a href={data.identity.links.github} target="_blank" rel="noopener noreferrer">GitHub</a>
