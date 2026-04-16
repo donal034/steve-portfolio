@@ -1,402 +1,1034 @@
-// Portfolio — Steve (Ngahan Donal Steve) — GitHub Pages (no build)
-const { useMemo } = React;
+// Portfolio — NGAHAN Donal Steve — GitHub Pages (no build)
+const { useState, useEffect, useRef } = React;
 
-function Badge({ children }) {
-  return (
-    <span className="inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700 bg-white/70 dark:bg-white/5 backdrop-blur">
-      {children}
-    </span>
-  );
-}
+/* ── DESIGN TOKENS ─────────────────────────────────────── */
+const css = `
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap');
 
-function SectionTitle({ kicker, title, subtitle }) {
-  return (
-    <div className="mb-8">
-      {kicker && (
-        <div className="mb-2 text-xs uppercase tracking-widest text-gray-500 dark:text-gray-400">
-          {kicker}
-        </div>
-      )}
-      <h2 className="text-2xl md:text-3xl font-semibold text-gray-900 dark:text-white">
-        {title}
-      </h2>
-      {subtitle && (
-        <p className="mt-2 text-gray-600 dark:text-gray-300 max-w-3xl">{subtitle}</p>
-      )}
-    </div>
-  );
-}
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+  :root {
+    --bg:       #080c14;
+    --bg2:      #0d1421;
+    --bg3:      #111827;
+    --border:   rgba(0,240,200,0.12);
+    --border2:  rgba(0,240,200,0.25);
+    --cyan:     #00f0c8;
+    --cyan-dim: rgba(0,240,200,0.15);
+    --cyan-glow:rgba(0,240,200,0.35);
+    --text:     #e2e8f0;
+    --text-dim: #64748b;
+    --text-mid: #94a3b8;
+    --white:    #f8fafc;
+    --font-mono: 'Space Mono', monospace;
+    --font-head: 'Syne', sans-serif;
+    --r: 12px;
+    --r2: 20px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-head);
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  /* GRID OVERLAY */
+  .grid-bg {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse 80% 80% at 50% 0%, black 30%, transparent 100%);
+  }
+
+  /* NAVBAR */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    backdrop-filter: blur(20px);
+    background: rgba(8,12,20,0.85);
+    border-bottom: 1px solid var(--border);
+    height: 58px;
+    display: flex; align-items: center;
+    padding: 0 clamp(16px, 5vw, 48px);
+    justify-content: space-between;
+  }
+  .nav-logo {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--cyan);
+    letter-spacing: 0.05em;
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--text-dim); }
+  .nav-links { display: flex; gap: 28px; }
+  .nav-links a {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-mid);
+    text-decoration: none;
+    transition: color 0.2s;
+    position: relative;
+  }
+  .nav-links a:hover { color: var(--cyan); }
+  .nav-links a::after {
+    content: ''; position: absolute; bottom: -2px; left: 0; right: 0;
+    height: 1px; background: var(--cyan); transform: scaleX(0);
+    transform-origin: left; transition: transform 0.2s;
+  }
+  .nav-links a:hover::after { transform: scaleX(1); }
+  @media (max-width: 600px) { .nav-links { display: none; } }
+
+  /* SECTIONS */
+  section { position: relative; z-index: 1; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 clamp(16px, 5vw, 48px); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 48px;
+    align-items: center;
+    padding-top: 58px;
+  }
+  @media (max-width: 900px) {
+    .hero { grid-template-columns: 1fr; padding-top: 80px; }
+    .hero-photo { display: none; }
+  }
+
+  .hero-kicker {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--cyan);
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 20px;
+  }
+  .hero-kicker::before {
+    content: ''; display: block;
+    width: 32px; height: 1px; background: var(--cyan);
+  }
+
+  .hero-name {
+    font-family: var(--font-head);
+    font-size: clamp(42px, 7vw, 80px);
+    font-weight: 800;
+    line-height: 1.0;
+    color: var(--white);
+    letter-spacing: -0.02em;
+  }
+  .hero-name .accent { color: var(--cyan); }
+
+  .hero-title {
+    font-family: var(--font-mono);
+    font-size: clamp(12px, 1.5vw, 15px);
+    color: var(--text-mid);
+    margin-top: 16px;
+    line-height: 1.7;
+  }
+
+  .hero-blurb {
+    margin-top: 24px;
+    font-size: 17px;
+    color: var(--text);
+    max-width: 540px;
+    line-height: 1.7;
+    font-weight: 400;
+  }
+
+  .hero-badges {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    margin-top: 28px;
+  }
+
+  .hero-ctas {
+    display: flex; flex-wrap: wrap; gap: 12px;
+    margin-top: 32px;
+  }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--cyan); color: #080c14;
+    font-family: var(--font-mono); font-size: 12px;
+    font-weight: 700; letter-spacing: 0.08em;
+    padding: 12px 24px; border-radius: var(--r);
+    text-decoration: none; transition: all 0.2s;
+    border: none; cursor: pointer;
+  }
+  .btn-primary:hover { background: #00ffd5; transform: translateY(-1px); box-shadow: 0 8px 24px var(--cyan-glow); }
+
+  .btn-ghost {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: transparent; color: var(--text);
+    font-family: var(--font-mono); font-size: 12px;
+    letter-spacing: 0.08em;
+    padding: 12px 24px; border-radius: var(--r);
+    text-decoration: none; transition: all 0.2s;
+    border: 1px solid var(--border2); cursor: pointer;
+  }
+  .btn-ghost:hover { border-color: var(--cyan); color: var(--cyan); }
+
+  /* PHOTO */
+  .hero-photo {
+    position: relative;
+  }
+  .photo-frame {
+    position: relative;
+    width: 320px; height: 380px;
+    margin: 0 auto;
+  }
+  .photo-frame::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 24px;
+    background: linear-gradient(135deg, var(--cyan), transparent 60%);
+    z-index: 0;
+  }
+  .photo-frame img {
+    position: relative; z-index: 1;
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: center top;
+    border-radius: 22px;
+    display: block;
+  }
+  .photo-badge {
+    position: absolute;
+    bottom: -14px; right: -14px;
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: var(--r);
+    padding: 10px 14px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--cyan);
+    z-index: 2;
+  }
+
+  /* STATUS DOT */
+  .status-dot {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--font-mono); font-size: 11px;
+    color: var(--text-mid);
+  }
+  .status-dot::before {
+    content: ''; display: block;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 8px #22c55e;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; } 50% { opacity: 0.4; }
+  }
+
+  /* BADGE */
+  .badge {
+    display: inline-flex; align-items: center;
+    background: var(--cyan-dim);
+    border: 1px solid var(--border2);
+    color: var(--cyan);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    padding: 4px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  .tag {
+    display: inline-flex; align-items: center;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    color: var(--text-mid);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    padding: 3px 9px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  /* SECTION HEADER */
+  .section-kicker {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--cyan);
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 12px;
+  }
+  .section-kicker::before {
+    content: '//'; color: var(--text-dim); font-size: 12px;
+  }
+  .section-title {
+    font-size: clamp(28px, 4vw, 42px);
+    font-weight: 800;
+    color: var(--white);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+  .section-sub {
+    margin-top: 12px;
+    color: var(--text-mid);
+    max-width: 580px;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  .section-header { margin-bottom: 48px; }
+
+  /* CARD */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--r2);
+    padding: 24px;
+    transition: border-color 0.2s, transform 0.2s;
+    position: relative; overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cyan-glow), transparent);
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .card:hover { border-color: var(--border2); transform: translateY(-2px); }
+  .card:hover::before { opacity: 1; }
+
+  /* SKILLS GRID */
+  .skills-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+
+  .skill-card-title {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 14px;
+  }
+  .skill-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  /* PROJECTS GRID */
+  .projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
+
+  .project-card {
+    display: flex; flex-direction: column;
+    height: 100%;
+  }
+  .project-num {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+  .project-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1.3;
+    margin-bottom: 10px;
+  }
+  .project-summary {
+    font-size: 14px;
+    color: var(--text-mid);
+    line-height: 1.65;
+    flex: 1;
+    margin-bottom: 16px;
+  }
+  .project-highlights {
+    list-style: none;
+    margin-bottom: 16px;
+  }
+  .project-highlights li {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text);
+    padding: 4px 0;
+    display: flex; align-items: flex-start; gap: 8px;
+  }
+  .project-highlights li::before {
+    content: '→'; color: var(--cyan); flex-shrink: 0; margin-top: 1px;
+  }
+  .project-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
+  .project-links { display: flex; gap: 10px; margin-top: auto; }
+
+  /* TIMELINE */
+  .timeline { position: relative; }
+  .timeline-line {
+    position: absolute; left: 15px; top: 8px; bottom: 8px;
+    width: 1px;
+    background: linear-gradient(to bottom, var(--cyan), transparent);
+  }
+  .timeline-item {
+    position: relative; padding-left: 44px;
+    margin-bottom: 40px;
+  }
+  .timeline-dot {
+    position: absolute; left: 8px; top: 6px;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 2px solid var(--cyan);
+    box-shadow: 0 0 8px var(--cyan-glow);
+  }
+  .timeline-org {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--cyan);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  .timeline-role {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 4px;
+  }
+  .timeline-period {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+  }
+  .timeline-bullets { list-style: none; }
+  .timeline-bullets li {
+    font-size: 14px;
+    color: var(--text-mid);
+    padding: 3px 0;
+    padding-left: 16px;
+    position: relative;
+    line-height: 1.6;
+  }
+  .timeline-bullets li::before {
+    content: '–'; color: var(--cyan);
+    position: absolute; left: 0;
+  }
+
+  /* CERTIF */
+  .certif-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; margin-top: 32px; }
+  .certif-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 16px 20px;
+    transition: border-color 0.2s;
+  }
+  .certif-card:hover { border-color: var(--border2); }
+  .certif-name { font-size: 14px; font-weight: 600; color: var(--white); margin-bottom: 4px; }
+  .certif-status {
+    font-family: var(--font-mono); font-size: 10px;
+    color: var(--cyan); letter-spacing: 0.06em;
+  }
+
+  /* CONTACT */
+  .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  @media (max-width: 700px) { .contact-grid { grid-template-columns: 1fr; } }
+
+  .contact-row {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .contact-row:last-child { border-bottom: none; }
+  .contact-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    min-width: 90px;
+    margin-top: 2px;
+  }
+  .contact-val { font-size: 14px; color: var(--text); }
+  .contact-val a { color: var(--cyan); text-decoration: none; }
+  .contact-val a:hover { text-decoration: underline; }
+
+  /* PITCH BOX */
+  .pitch-box {
+    background: linear-gradient(135deg, rgba(0,240,200,0.06), transparent);
+    border: 1px solid var(--border2);
+    border-radius: var(--r2);
+    padding: 28px;
+    height: 100%;
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .pitch-quote {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+  }
+  .pitch-quote .hl { color: var(--cyan); }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 32px clamp(16px, 5vw, 48px);
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+    font-family: var(--font-mono); font-size: 11px; color: var(--text-dim);
+    position: relative; z-index: 1;
+  }
+  footer a { color: var(--cyan); text-decoration: none; }
+
+  /* REVEAL */
+  .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.6s, transform 0.6s; }
+  .reveal.visible { opacity: 1; transform: none; }
+
+  /* DIVIDER */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 0; }
+
+  /* SECTION SPACING */
+  .py-section { padding: 96px 0; }
+`;
+
+/* ── DATA ───────────────────────────────────────────────── */
 const data = {
   identity: {
     fullname: "NGAHAN Donal Steve",
     nickname: "Steve",
-    title: "Apprenti Architecte Systèmes, Réseaux & Cybersécurité — Aspirant CISO",
-    location: "Île-de-France, France",
+    title: "Ingénieur Systèmes, Réseaux & Cybersécurité",
+    location: "Paris, Île-de-France, France",
     email: "donalngahan466@gmail.com",
+    phone: "+33 7 45 30 86 53",
     links: {
       linkedin: "https://www.linkedin.com/in/donal-ngahan/",
       github: "https://github.com/donal034",
-      x: "#",
-      phone: "+33 745308653",
-      cv: "./CV_Steve_Ngahan_2024.pdf",
+      cv: "./DONAL-STEVE-NGAHAN-CV.pdf",
     },
-    blurb:
-      "Je sécurise, j’automatise et j’industrialise. Focus: Compliance as Code, bastion d’accès, audits ISO 27001, et IA appliquée à la défense."
+    blurb: "Ingénieur en cybersécurité diplômé d'un Master à HETIC Paris — 2 ans d'expérience en infrastructures systèmes/réseaux et sécurité opérationnelle. Je sécurise, j'automatise et j'industrialise.",
+    photo: "./pp.png",
   },
   skills: [
     {
+      group: "Cybersécurité & Défense",
+      items: ["Pentest & OSINT", "SIEM Wazuh / Splunk / Centreon", "SOAR", "Palo Alto / FortiGate / Stormshield", "Forensique (FTK Imager, Volatility, Autopsy)", "Analyse de malware & threat hunting"],
+    },
+    {
       group: "Sécurité & Gouvernance",
-      items: [
-        "ISO 27001 (audits, Annexes A)",
-        "NIS2 / PSSI",
-        "Compliance as Code (OPA, Terraform Compliance)",
-        "Gestion des identités & MFA",
-        "Bastion d’accès (Guacamole, Jumpserver)",
-        "SIEM & logs (concepts)",
-      ],
+      items: ["ISO 27001 (audits, Annexes A)", "NIS2 / PSSI", "Compliance as Code (OPA, Rego)", "PKI / IAM / MFA", "Bastion d'accès (Guacamole, Jumpserver)", "Gestion des risques & KPI"],
     },
     {
-      group: "Infra & Ops",
-      items: [
-        "Linux (Debian/Ubuntu)",
-        "Windows Server (AD, RDP, GPO)",
-        "VMware / Hyper‑V",
-        "Ansible, Terraform",
-        "GitLab CI/CD",
-        "Docker",
-      ],
+      group: "Infra & Virtualisation",
+      items: ["Windows Server (AD, DNS, DHCP, GPO, WSUS)", "VMware vSphere / ESXi / Hyper-V", "Docker / Kubernetes", "Ansible / Terraform", "GitLab CI/CD", "PRA / PCA / Load balancing"],
     },
     {
-      group: "Réseau & Sécurité Périmétrique",
-      items: [
-        "Palo Alto (PAN)",
-        "Cisco Meraki",
-        "Reverse proxy / VPN",
-        "Supervision Grafana & Prometheus",
-      ],
+      group: "Réseau & Périmètre",
+      items: ["VLAN / Routage inter-VLAN", "SD-WAN / MPLS", "VPN IPsec / SSL", "Cisco / Juniper / Meraki", "Wireshark / ELK Stack", "Grafana & Prometheus"],
+    },
+    {
+      group: "Programmation & Automatisation",
+      items: ["Python", "PowerShell", "Bash", "GNS3 / Cisco Packet Tracer", "Scripts de collecte & analyse de logs", "Automatisation des processus sécurité"],
     },
     {
       group: "Cloud & M365",
-      items: [
-        "AWS (préparation certif)",
-        "Microsoft 365",
-        "Sécurité SaaS",        
-      ],
-    },
-    {
-      group: "Langages & Outils",
-      items: ["Python", "Bash", "Nmap", "Wireshark", "GLPI", "Git"],
+      items: ["AWS (préparation Associate)", "Microsoft 365 Security", "Sécurité SaaS", "Terraform Cloud"],
     },
   ],
   projects: [
     {
       id: "cac",
+      num: "01",
       title: "Compliance as Code — Mémoire & PoC",
       year: "2025",
-      summary:
-        "Modèle réutilisable de Compliance as Code pour environnements hybrides (on‑prem / cloud), intégration des contrôles dans la chaîne CI/CD.",
+      type: "Mémoire / DevSecOps",
+      summary: "Modèle réutilisable de Compliance as Code pour environnements hybrides (on-prem / cloud). Intégration des contrôles ISO 27001 directement dans la chaîne CI/CD.",
       highlights: [
-        "OPA/Rego, Terraform Compliance",
-        "Pipeline GitLab CI",
-        "Cartographie des exigences ISO 27001",
+        "Politiques OPA/Rego alignées ISO 27001 Annexes A",
+        "Pipeline GitLab CI avec gates de conformité automatisés",
+        "Cartographie des exigences → contrôles vérifiables",
+        "Rapport de conformité généré automatiquement",
       ],
-      tags: ["Compliance", "DevSecOps", "IaC"],
-      links: { demo: "#", repo: "#" },
+      tags: ["Compliance", "OPA/Rego", "Terraform", "GitLab CI", "ISO 27001"],
+      links: { repo: "#", demo: "#" },
     },
     {
       id: "bastion",
-      title: "Bastion d’accès — Guacamole / Reverse proxy",
-      year: "2025",
-      summary:
-        "Mise en place d’un bastion pour accès RDP/SSH/HTTP(S) avec suivi des connexions et contrôle des durées.",
+      num: "02",
+      title: "Bastion d'accès Sécurisé",
+      year: "2024–2025",
+      type: "Infra / Sécurité",
+      summary: "Déploiement d'un bastion Apache Guacamole pour accès RDP/SSH/HTTP(S) sécurisé avec journalisation intégrale des sessions et contrôle granulaire des durées d'accès.",
       highlights: [
-        "Apache Guacamole",
-        "Reverse proxy",
-        "Traçabilité & supervision",
+        "Apache Guacamole avec reverse proxy HTTPS",
+        "Journalisation des sessions d'administration",
+        "Intégration Active Directory (groupes / rôles)",
+        "Segmentation réseau et politiques d'accès",
       ],
-      tags: ["Sécurité", "Réseau", "Bastion"],
-      links: { demo: "#", repo: "#" },
+      tags: ["Bastion", "Guacamole", "RDP/SSH", "Traçabilité"],
+      links: { repo: "#", demo: "#" },
+    },
+    {
+      id: "soc",
+      num: "03",
+      title: "SOC — Wazuh & Security Onion",
+      year: "2025",
+      type: "Blue Team / SOC",
+      summary: "Mise en place d'un SOC académique complet : pipeline de collecte de logs, règles de détection personnalisées et playbooks de réponse aux incidents.",
+      highlights: [
+        "Pipeline de logs multi-sources (agents Wazuh)",
+        "Règles de détection sur-mesure (alertes critiques)",
+        "Playbooks de réponse aux incidents documentés",
+        "Tableaux de bord Kibana / Security Onion",
+      ],
+      tags: ["Wazuh", "Security Onion", "SIEM", "Blue Team"],
+      links: { repo: "#", demo: "#" },
     },
     {
       id: "stanley",
+      num: "04",
       title: "Cyber Range Stanley — IA attaque/défense",
       year: "2025",
-      summary:
-        "Conception d’un cyber range avec agents IA pour orchestrer scénarios d’attaque et de défense.",
-      highlights: ["Automatisation", "Détection & réponse", "IA appliquée"],
-      tags: ["IA", "Blue/Red Team", "Simulation"],
-      links: { demo: "#", repo: "#" },
+      type: "Red/Blue Team",
+      summary: "Conception d'un cyber range avec agents IA pour orchestrer des scénarios d'attaque et de défense. KPIs mesurés, rapport de synthèse produit à l'issue de chaque session.",
+      highlights: [
+        "Orchestration IA des scénarios Red/Blue Team",
+        "Automatisation de la détection & réponse",
+        "KPIs : MTTD, MTTR, taux de détection",
+        "Rapport de synthèse post-exercice",
+      ],
+      tags: ["IA", "Red Team", "Blue Team", "Simulation"],
+      links: { repo: "#", demo: "#" },
     },
     {
-      id: "iso",
-      title: "Grille d’audit ISO 27001 — Nexora (fictif)",
-      year: "2025",
-      summary:
-        "Grille d’audit contextualisée (Annexe A, exigences 6.1.2, 7.4, 9.3…), personnes à interroger, preuves attendues, points de contrôle.",
-      highlights: ["Annexe A", "Preuves & contrôles", "Rapports"],
-      tags: ["Audit", "Gouvernance"],
-      links: { demo: "#", repo: "#" },
+      id: "pentest",
+      num: "05",
+      title: "Pentest CTF — DVWA / OWASP / Root-Me / HTB",
+      year: "2024–2025",
+      type: "Offensif",
+      summary: "Exploitation contrôlée de plateformes CTF et d'environnements vulnérables. Reporting professionnel avec preuves, analyse des vulnérabilités et recommandations de remédiations.",
+      highlights: [
+        "DVWA, OWASP Juice Shop, Root-Me, TryHackMe, HackTheBox",
+        "OWASP Top 10 : SQLi, XSS, IDOR, SSRF…",
+        "Reporting et remédiations documentés",
+        "OSINT & reconnaissance",
+      ],
+      tags: ["Pentest", "CTF", "OWASP", "OSINT"],
+      links: { repo: "#", demo: "#" },
+    },
+    {
+      id: "forensic",
+      num: "06",
+      title: "Forensique & Analyse de Malware",
+      year: "2024–2025",
+      type: "Forensique",
+      summary: "Analyse forensique de systèmes compromis : timeline d'événements, extraction d'IOCs et identification d'artefacts malveillants avec les outils standards de l'industrie.",
+      highlights: [
+        "Analyse mémoire avec Volatility",
+        "Investigation disque avec Autopsy",
+        "Décodage et analyse avec CyberChef",
+        "Timeline des événements, extraction d'IOCs",
+      ],
+      tags: ["Volatility", "Autopsy", "CyberChef", "IOC", "Forensique"],
+      links: { repo: "#", demo: "#" },
     },
   ],
   experience: [
     {
-      org: "Dompro",
+      org: "DOMPRO",
       role: "Apprenti Architecte Systèmes, Réseaux & Cybersécurité",
-      period: "2024 – aujourd’hui",
+      period: "09/2024 – 11/2025 · Paris, France",
       bullets: [
-        "Bastion d’accès (Guacamole), PSSI 2025 (base documentaire enrichie)",
-        "Mise en place GLPI, supervision Grafana/Prometheus",
-        "Contribution sécurité périmétrique (PAN, Meraki, MPLS)",
+        "Administration d'infrastructures Windows Server (AD, DNS, DHCP, GPO, WSUS)",
+        "Mise en place d'un bastion d'accès (Guacamole) avec journalisation des sessions",
+        "Gestion sécurité périmétrique : VPN, pare-feu Palo Alto, segmentation réseau MPLS",
+        "Administration et supervision VMware vSphere / Hyper-V",
+        "Contribution à la PSSI 2025, alignement ISO 27001, renforcement des politiques",
+        "Déploiement GLPI, supervision Grafana / Prometheus",
+        "Support niveau 2 et rédaction de procédures techniques",
       ],
     },
     {
-      org: "HETIC",
-      role: "Mastère Cybersécurité — Projets académiques",
-      period: "2024 – 2025",
+      org: "B.E.C LA ROUTIÈRE",
+      role: "Technicien Réseaux & Sécurité (Stage)",
+      period: "05/2023 – 07/2023 · Yaoundé, Cameroun",
       bullets: [
-        "Cyber Range Stanley (IA) — orchestration attaque/défense",
-        "Mémoire Compliance as Code — modèle réutilisable",
+        "Installation des serveurs, déploiement des services ADDS, DNS, DHCP",
+        "Gestion des utilisateurs, groupes et droits d'accès",
+        "Configuration des GPO et des pare-feu Windows",
+      ],
+    },
+    {
+      org: "INFO-SERVICE",
+      role: "Ingénieur Réseaux Informatiques",
+      period: "01/2021 – 01/2022 · Yaoundé, Cameroun",
+      bullets: [
+        "Surveillance continue du trafic réseau, analyse avec Wireshark",
+        "Développement de scripts Python/Bash pour la collecte et l'analyse de logs",
+        "Gestion des vulnérabilités et traitement des incidents de sécurité",
+        "Supervision de l'infrastructure avec Nagios et SolarWinds",
       ],
     },
   ],
+  education: [
+    { school: "HETIC", degree: "Master Cybersécurité", period: "2024 – 2025 · Paris, France" },
+    { school: "École IT", degree: "Architecture Réseaux, Systèmes & Cybersécurité", period: "2022 – 2024 · Orléans, France" },
+    { school: "IAI", degree: "Licence Administration Systèmes & Réseaux", period: "2017 – 2020 · Yaoundé, Cameroun" },
+  ],
   certifications: [
-    { name: "AWS (Associate)", status: "En préparation" },
+    { name: "AWS Solutions Architect", status: "En préparation" },
     { name: "Microsoft 365", status: "En préparation" },
     { name: "TOEFL", status: "Objectif 2025" },
   ],
 };
 
-function PortfolioSteve() {
-  const year = new Date().getFullYear();
-
-  const allTags = React.useMemo(() => {
-    const set = new Set();
-    data.projects.forEach((p) => p.tags.forEach((t) => set.add(t)));
-    return Array.from(set);
+/* ── HOOKS ──────────────────────────────────────────────── */
+function useReveal() {
+  useEffect(() => {
+    const els = document.querySelectorAll('.reveal');
+    const obs = new IntersectionObserver(
+      (entries) => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }),
+      { threshold: 0.12 }
+    );
+    els.forEach(el => obs.observe(el));
+    return () => obs.disconnect();
   }, []);
+}
+
+/* ── COMPONENTS ─────────────────────────────────────────── */
+function Navbar() {
+  return (
+    <nav className="nav">
+      <a href="#accueil" className="nav-logo">
+        <span>// </span>steve.ngahan
+      </a>
+      <div className="nav-links">
+        <a href="#competences">Compétences</a>
+        <a href="#projets">Projets</a>
+        <a href="#parcours">Parcours</a>
+        <a href="#contact">Contact</a>
+      </div>
+    </nav>
+  );
+}
+
+function Hero() {
+  return (
+    <section id="accueil">
+      <div className="container">
+        <div className="hero">
+          <div>
+            <div className="hero-kicker">
+              <span className="status-dot">Disponible · CDI</span>
+            </div>
+            <h1 className="hero-name">
+              Donal<br /><span className="accent">Steve</span><br />Ngahan
+            </h1>
+            <p className="hero-title">
+              {data.identity.title}<br />
+              {data.identity.location}
+            </p>
+            <p className="hero-blurb">{data.identity.blurb}</p>
+            <div className="hero-badges">
+              <span className="badge">ISO 27001</span>
+              <span className="badge">SIEM / SOC</span>
+              <span className="badge">Bastion d'accès</span>
+              <span className="badge">Compliance as Code</span>
+              <span className="badge">Pentest</span>
+            </div>
+            <div className="hero-ctas">
+              <a href={`mailto:${data.identity.email}`} className="btn-primary">
+                ✉ Écrire un e-mail
+              </a>
+              <a href={data.identity.links.linkedin} target="_blank" rel="noopener noreferrer" className="btn-ghost">
+                LinkedIn ↗
+              </a>
+              <a href={data.identity.links.github} target="_blank" rel="noopener noreferrer" className="btn-ghost">
+                GitHub ↗
+              </a>
+              <a href={data.identity.links.cv} className="btn-ghost">
+                CV (PDF) ↓
+              </a>
+            </div>
+          </div>
+          <div className="hero-photo">
+            <div className="photo-frame">
+              <img src={data.identity.photo} alt="NGAHAN Donal Steve" />
+              <div className="photo-badge">
+                🛡 Master Cybersécurité<br />HETIC · 2025
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Skills() {
+  useReveal();
+  return (
+    <section id="competences" className="py-section">
+      <hr className="divider" />
+      <div className="container" style={{ paddingTop: '96px' }}>
+        <div className="section-header reveal">
+          <div className="section-kicker">Compétences</div>
+          <h2 className="section-title">Ce que je maîtrise</h2>
+          <p className="section-sub">Un mix opérationnel (bastion, réseau, supervision) et gouvernance (ISO 27001, PSSI), avec une forte culture d'automatisation et de sécurité défensive.</p>
+        </div>
+        <div className="skills-grid">
+          {data.skills.map((g, i) => (
+            <div className={`card reveal`} key={g.group} style={{ transitionDelay: `${i * 60}ms` }}>
+              <div className="skill-card-title">{g.group}</div>
+              <div className="skill-tags">
+                {g.items.map(it => <span className="tag" key={it}>{it}</span>)}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Projects() {
+  const [filter, setFilter] = useState(null);
+  const allTags = [...new Set(data.projects.flatMap(p => p.tags))];
+  const filtered = filter ? data.projects.filter(p => p.tags.includes(filter)) : data.projects;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-neutral-950 dark:to-neutral-900 text-gray-900 dark:text-gray-100">
-      {/* NAVBAR */}
-      <header className="sticky top-0 z-50 backdrop-blur border-b border-black/5 dark:border-white/10 bg-white/60 dark:bg-black/30">
-        <nav className="mx-auto max-w-6xl px-4 md:px-6 h-14 flex items-center justify-between">
-          <a href="#accueil" className="font-semibold tracking-tight">
-            <span className="text-sm text-gray-500 dark:text-gray-400">Portfolio</span>{" "}
-            <span className="ml-1">Steve</span>
-          </a>
-          <div className="hidden md:flex gap-6 text-sm">
-            <a href="#competences" className="hover:opacity-80">Compétences</a>
-            <a href="#projets" className="hover:opacity-80">Projets</a>
-            <a href="#parcours" className="hover:opacity-80">Parcours</a>
-            <a href="#contact" className="hover:opacity-80">Contact</a>
-          </div>
-          <div className="flex items-center gap-2">
-            <a href={data.identity.links.cv} className="hidden sm:inline-flex items-center rounded-xl border px-3 py-1.5 text-sm border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5 transition">
-              Télécharger CV
-            </a>
-            <a href={`mailto:${data.identity.email}`} className="inline-flex items-center rounded-xl bg-black text-white dark:bg-white dark:text-black px-3 py-1.5 text-sm font-medium hover:opacity-90 transition">
-              Me contacter
-            </a>
-          </div>
-        </nav>
-      </header>
+    <section id="projets" className="py-section">
+      <hr className="divider" />
+      <div className="container" style={{ paddingTop: '96px' }}>
+        <div className="section-header reveal">
+          <div className="section-kicker">Projets</div>
+          <h2 className="section-title">Travaux & Réalisations</h2>
+          <p className="section-sub">Projets menés en entreprise, en académique et en autodidacte. Détails et dépôts disponibles sur demande.</p>
+        </div>
 
-      {/* HERO */}
-      <section id="accueil" className="relative">
-        <div className="mx-auto max-w-6xl px-4 md:px-6 py-16 md:py-24">
-          <div className="grid md:grid-cols-12 gap-10 items-center">
-            <div className="md:col-span-7">
-              <div className="text-xs uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-3">Cybersécurité · DevSecOps · Gouvernance</div>
-              <h1 className="text-3xl md:text-5xl font-bold leading-tight">
-                {data.identity.fullname} <span className="opacity-70">({data.identity.nickname})</span>
-              </h1>
-              <p className="mt-3 text-lg text-gray-700 dark:text-gray-300">
-                {data.identity.title}
-              </p>
-              <p className="mt-4 max-w-2xl text-gray-600 dark:text-gray-300">
-                {data.identity.blurb}
-              </p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                <Badge>Île-de-France</Badge>
-                <Badge>Ouvert aux opportunités</Badge>
-                <Badge>FR / EN</Badge>
+        {/* Filter bar */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '36px' }} className="reveal">
+          <button
+            onClick={() => setFilter(null)}
+            style={{
+              fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.06em',
+              padding: '6px 14px', borderRadius: '999px', cursor: 'pointer',
+              border: '1px solid', transition: 'all 0.2s',
+              background: filter === null ? 'var(--cyan)' : 'transparent',
+              color: filter === null ? 'var(--bg)' : 'var(--text-mid)',
+              borderColor: filter === null ? 'var(--cyan)' : 'var(--border)',
+            }}
+          >Tous</button>
+          {allTags.map(t => (
+            <button
+              key={t}
+              onClick={() => setFilter(filter === t ? null : t)}
+              style={{
+                fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.06em',
+                padding: '6px 14px', borderRadius: '999px', cursor: 'pointer',
+                border: '1px solid', transition: 'all 0.2s',
+                background: filter === t ? 'var(--cyan)' : 'transparent',
+                color: filter === t ? 'var(--bg)' : 'var(--text-mid)',
+                borderColor: filter === t ? 'var(--cyan)' : 'var(--border)',
+              }}
+            >{t}</button>
+          ))}
+        </div>
+
+        <div className="projects-grid">
+          {filtered.map((p, i) => (
+            <div className="card project-card reveal" key={p.id} style={{ transitionDelay: `${i * 60}ms` }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                <div className="project-num">{p.num} · {p.type}</div>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-dim)' }}>{p.year}</span>
               </div>
-              <div className="mt-8 flex flex-wrap gap-3">
-                <a href={`mailto:${data.identity.email}`} className="inline-flex items-center rounded-2xl bg-black text-white dark:bg-white dark:text-black px-4 py-2 text-sm font-medium hover:opacity-90 transition">
-                  Écrire un e‑mail
-                </a>
-                <a href={data.identity.links.linkedin} target="_blank" rel="noopener noreferrer" className="inline-flex items-center rounded-2xl border px-4 py-2 text-sm border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5 transition">
-                  LinkedIn
-                </a>
-                <a href={data.identity.links.github} target="_blank" rel="noopener noreferrer" className="inline-flex items-center rounded-2xl border px-4 py-2 text-sm border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5 transition">
-                  GitHub
-                </a>
+              <div className="project-title">{p.title}</div>
+              <div className="project-summary">{p.summary}</div>
+              <ul className="project-highlights">
+                {p.highlights.map(h => <li key={h}>{h}</li>)}
+              </ul>
+              <div className="project-tags">
+                {p.tags.map(t => <span className="tag" key={t}>{t}</span>)}
+              </div>
+              <div className="project-links">
+                <a href={p.links.demo} className="btn-ghost" style={{ fontSize: '11px', padding: '8px 16px' }}>Aperçu</a>
+                <a href={p.links.repo} className="btn-ghost" style={{ fontSize: '11px', padding: '8px 16px' }}>Code</a>
               </div>
             </div>
-            <div className="md:col-span-5">
-              <div className="relative aspect-square w-full max-w-sm mx-auto overflow-hidden rounded-3xl border border-gray-200 dark:border-white/10 bg-gradient-to-br from-gray-100 to-gray-50 dark:from-neutral-900 dark:to-neutral-800">
-                {/* Placeholder portrait zone — replace with an actual image */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="text-6xl">🛡️</div>
-                    <div className="mt-2 text-sm text-gray-500"><img src="./pp.png" /></div>
-                  </div>
-                </div>
-              </div>
-              <p className="text-xs text-center mt-3 text-gray-500 dark:text-gray-400">Ajoute une photo 1:1 (600×600+), fond neutre.</p>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Experience() {
+  return (
+    <section id="parcours" className="py-section">
+      <hr className="divider" />
+      <div className="container" style={{ paddingTop: '96px' }}>
+        <div className="section-header reveal">
+          <div className="section-kicker">Parcours</div>
+          <h2 className="section-title">Expériences & Formation</h2>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '64px' }}>
+
+          {/* Experience */}
+          <div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '28px' }}>
+              &gt; Expériences professionnelles
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* SKILLS */}
-      <section id="competences" className="border-t border-black/5 dark:border-white/10">
-        <div className="mx-auto max-w-6xl px-4 md:px-6 py-14">
-          <SectionTitle
-            kicker="Compétences"
-            title="Ce que je maîtrise"
-            subtitle="Un mix opérationnel (bastion, réseau, supervision) et gouvernance (ISO 27001, PSSI), avec une forte culture d’automatisation."
-          />
-          <div className="grid md:grid-cols-2 gap-6">
-            {data.skills.map((group) => (
-              <div key={group.group} className="rounded-2xl border p-5 border-gray-200 dark:border-gray-700 bg-white/70 dark:bg-white/5">
-                <h3 className="font-medium mb-3">{group.group}</h3>
-                <div className="flex flex-wrap gap-2">
-                  {group.items.map((it) => (
-                    <Badge key={it}>{it}</Badge>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* PROJECTS */}
-      <section id="projets" className="border-t border-black/5 dark:border-white/10">
-        <div className="mx-auto max-w-6xl px-4 md:px-6 py-14">
-          <SectionTitle
-            kicker="Projets"
-            title="Sélection de travaux"
-            subtitle="Quelques projets concrets menés en entreprise et à l’école. Détails et dépôts disponibles sur demande."
-          />
-
-          {/* Tag cloud */}
-          <div className="flex flex-wrap gap-2 mb-6">
-            {allTags.map((t) => (
-              <Badge key={t}>{t}</Badge>
-            ))}
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-6">
-            {data.projects.map((p) => (
-              <article key={p.id} className="group rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/70 dark:bg-white/5 overflow-hidden">
-                <div className="p-5">
-                  <div className="flex items-center justify-between gap-3">
-                    <h3 className="text-lg font-semibold group-hover:underline underline-offset-4 decoration-2">
-                      {p.title}
-                    </h3>
-                    <span className="text-xs text-gray-500">{p.year}</span>
-                  </div>
-                  <p className="mt-2 text-gray-700 dark:text-gray-300">{p.summary}</p>
-                  <ul className="mt-3 list-disc list-inside text-sm text-gray-600 dark:text-gray-300">
-                    {p.highlights.map((h) => (
-                      <li key={h}>{h}</li>
-                    ))}
-                  </ul>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {p.tags.map((t) => (
-                      <Badge key={t}>{t}</Badge>
-                    ))}
-                  </div>
-                  <div className="mt-5 flex gap-3 text-sm">
-                    <a href={p.links.demo} className="inline-flex items-center rounded-xl border px-3 py-1.5 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5 transition">Aperçu</a>
-                    <a href={p.links.repo} className="inline-flex items-center rounded-xl border px-3 py-1.5 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5 transition">Code</a>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* EXPERIENCE */}
-      <section id="parcours" className="border-t border-black/5 dark:border-white/10">
-        <div className="mx-auto max-w-6xl px-4 md:px-6 py-14">
-          <SectionTitle kicker="Parcours" title="Expériences & formation" />
-          <div className="relative">
-            <div className="absolute left-3 top-0 bottom-0 w-px bg-gray-200 dark:bg-gray-700" />
-            <div className="space-y-6">
-              {data.experience.map((e, idx) => (
-                <div key={idx} className="relative pl-10">
-                  <div className="absolute left-0 top-1.5 h-3 w-3 rounded-full bg-black dark:bg-white" />
-                  <h3 className="font-semibold">{e.org} — {e.role}</h3>
-                  <div className="text-sm text-gray-500 mb-2">{e.period}</div>
-                  <ul className="list-disc list-inside text-gray-700 dark:text-gray-300">
-                    {e.bullets.map((b) => (
-                      <li key={b}>{b}</li>
-                    ))}
+            <div className="timeline reveal">
+              <div className="timeline-line" />
+              {data.experience.map((e, i) => (
+                <div className="timeline-item" key={i}>
+                  <div className="timeline-dot" />
+                  <div className="timeline-org">{e.org}</div>
+                  <div className="timeline-role">{e.role}</div>
+                  <div className="timeline-period">{e.period}</div>
+                  <ul className="timeline-bullets">
+                    {e.bullets.map(b => <li key={b}>{b}</li>)}
                   </ul>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Certifs */}
-          <div className="mt-10">
-            <h4 className="text-sm uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-3">Certifications</h4>
-            <div className="flex flex-wrap gap-2">
-              {data.certifications.map((c) => (
-                <Badge key={c.name}>{c.name} — {c.status}</Badge>
+          {/* Education + Certifs */}
+          <div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '28px' }}>
+              &gt; Formation
+            </div>
+            <div className="timeline reveal">
+              <div className="timeline-line" />
+              {data.education.map((ed, i) => (
+                <div className="timeline-item" key={i}>
+                  <div className="timeline-dot" />
+                  <div className="timeline-org">{ed.school}</div>
+                  <div className="timeline-role">{ed.degree}</div>
+                  <div className="timeline-period">{ed.period}</div>
+                </div>
               ))}
             </div>
-          </div>
-        </div>
-      </section>
 
-      {/* CONTACT */}
-      <section id="contact" className="border-t border-black/5 dark:border-white/10">
-        <div className="mx-auto max-w-6xl px-4 md:px-6 py-14">
-          <SectionTitle
-            kicker="Contact"
-            title="Travaillons ensemble"
-            subtitle="Un besoin de sécurisation, d’audit ou d’industrialisation de la sécurité ? Parlons‑en."
-          />
-
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="md:col-span-2 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 bg-white/70 dark:bg-white/5">
-              <div className="text-sm text-gray-600 dark:text-gray-300">
-                <p><span className="font-medium">E‑mail:</span> <a className="underline" href={`mailto:${data.identity.email}`}>{data.identity.email}</a></p>
-                <p className="mt-2"><span className="font-medium">Localisation:</span> {data.identity.location}</p>
-                <p className="mt-2"><span className="font-medium">Disponibilité:</span> Ouvert aux opportunités, alternance / missions.</p>
+            <div style={{ marginTop: '48px' }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '16px' }}>
+                &gt; Certifications en cours
               </div>
-              <div className="mt-6 flex flex-wrap gap-3">
-                <a href={data.identity.links.linkedin} target="_blank" rel="noopener noreferrer" className="inline-flex items-center rounded-xl border px-3 py-1.5 text-sm border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5 transition">LinkedIn</a>
-                <a href={data.identity.links.github} target="_blank" rel="noopener noreferrer" className="inline-flex items-center rounded-xl border px-3 py-1.5 text-sm border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5 transition">GitHub</a>
-                <a href={data.identity.links.cv} className="inline-flex items-center rounded-xl border px-3 py-1.5 text-sm border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5 transition">CV (PDF)</a>
+              <div className="certif-grid reveal">
+                {data.certifications.map(c => (
+                  <div className="certif-card" key={c.name}>
+                    <div className="certif-name">{c.name}</div>
+                    <div className="certif-status">{c.status}</div>
+                  </div>
+                ))}
               </div>
             </div>
-            <div className="rounded-2xl border border-gray-200 dark:border-gray-700 p-6 bg-white/70 dark:bg-white/5">
-              <h5 className="font-medium mb-2">Pitch</h5>
-              <p className="text-sm text-gray-700 dark:text-gray-300">
-                « Rendre l’IA défensive au moins aussi performante que l’IA offensive » — et ancrer la sécurité dans l’industrialisation: politiques codifiées, contrôles automatisés, et traçabilité bout‑en‑bout.
-              </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Contact() {
+  return (
+    <section id="contact" className="py-section">
+      <hr className="divider" />
+      <div className="container" style={{ paddingTop: '96px' }}>
+        <div className="section-header reveal">
+          <div className="section-kicker">Contact</div>
+          <h2 className="section-title">Travaillons ensemble</h2>
+          <p className="section-sub">Un besoin de sécurisation, d'audit ou d'industrialisation de la sécurité ? Je suis disponible pour des opportunités en CDI ou missions.</p>
+        </div>
+
+        <div className="contact-grid">
+          <div className="card reveal">
+            <div className="contact-row">
+              <span className="contact-label">E-mail</span>
+              <span className="contact-val"><a href={`mailto:${data.identity.email}`}>{data.identity.email}</a></span>
+            </div>
+            <div className="contact-row">
+              <span className="contact-label">Téléphone</span>
+              <span className="contact-val"><a href={`tel:${data.identity.phone}`}>{data.identity.phone}</a></span>
+            </div>
+            <div className="contact-row">
+              <span className="contact-label">Localisation</span>
+              <span className="contact-val">{data.identity.location}</span>
+            </div>
+            <div className="contact-row">
+              <span className="contact-label">Disponibilité</span>
+              <span className="contact-val"><span className="status-dot">Ouvert aux opportunités · CDI</span></span>
+            </div>
+            <div className="contact-row">
+              <span className="contact-label">Langues</span>
+              <span className="contact-val">Français (natif) · Anglais (B1, en progression)</span>
+            </div>
+            <div style={{ display: 'flex', gap: '10px', marginTop: '24px', flexWrap: 'wrap' }}>
+              <a href={data.identity.links.linkedin} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ fontSize: '11px', padding: '10px 20px' }}>LinkedIn ↗</a>
+              <a href={data.identity.links.github} target="_blank" rel="noopener noreferrer" className="btn-ghost" style={{ fontSize: '11px', padding: '10px 20px' }}>GitHub ↗</a>
+              <a href={data.identity.links.cv} className="btn-ghost" style={{ fontSize: '11px', padding: '10px 20px' }}>CV PDF ↓</a>
+            </div>
+          </div>
+
+          <div className="pitch-box reveal">
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--cyan)', marginBottom: '16px', letterSpacing: '0.1em' }}>
+              // vision
+            </div>
+            <div className="pitch-quote">
+              « Rendre l'<span className="hl">IA défensive</span> au moins aussi performante que l'<span className="hl">IA offensive</span> — et ancrer la sécurité dans l'industrialisation : politiques codifiées, contrôles automatisés, traçabilité bout-en-bout. »
+            </div>
+            <div style={{ marginTop: '24px', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              <span className="badge">Compliance as Code</span>
+              <span className="badge">DevSecOps</span>
+              <span className="badge">Blue Team</span>
+              <span className="badge">IA Défensive</span>
             </div>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
+  );
+}
 
-      {/* FOOTER */}
-      <footer className="border-t border-black/5 dark:border-white/10">
-        <div className="mx-auto max-w-6xl px-4 md:px-6 py-8 text-sm text-gray-500 flex flex-wrap items-center justify-between gap-3">
-          <span>© {new Date().getFullYear()} {data.identity.nickname}. Tous droits réservés.</span>
-          <div className="flex items-center gap-4">
-            <a href="#accueil" className="hover:opacity-80">Haut de page ↑</a>
-          </div>
-        </div>
-      </footer>
-    </div>
+function Footer() {
+  return (
+    <footer>
+      <span>© {new Date().getFullYear()} NGAHAN Donal Steve — Tous droits réservés.</span>
+      <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
+        <a href={data.identity.links.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn</a>
+        <a href={data.identity.links.github} target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="#accueil">↑ Haut</a>
+      </div>
+    </footer>
+  );
+}
+
+/* ── APP ───────────────────────────────────────────────── */
+function PortfolioSteve() {
+  useReveal();
+  return (
+    <>
+      <style dangerouslySetInnerHTML={{ __html: css }} />
+      <div className="grid-bg" />
+      <Navbar />
+      <main>
+        <Hero />
+        <Skills />
+        <Projects />
+        <Experience />
+        <Contact />
+      </main>
+      <Footer />
+    </>
   );
 }
 
