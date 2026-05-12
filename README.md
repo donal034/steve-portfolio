@@ -1,27 +1,76 @@
-# Portfolio — Steve (Ngahan Donal Steve)
+# 👋 Steve Donal NGAHAN — Cybersecurity Engineer
 
-Déploiement *sans build* sur **GitHub Pages** (React + Tailwind via CDNs).
+> Cybersecurity Engineer based in Paris 🇫🇷 | Blue Team | SOC | AWS | Python | Aspiring RSSI
 
-## Étapes
+🔗 [Portfolio](https://donal034.github.io/steve-portfolio) • [LinkedIn](https://linkedin.com/in/donal-ngahan) • [CVMatch Project](https://github.com/donal034/cvmatch)
 
-1. **Créer un dépôt GitHub** (ex. `steve-portfolio`).
-2. Téléverse les fichiers suivants à la racine du dépôt :
-   - `index.html`
-   - `app.jsx`
-3. Va dans **Settings → Pages** :
-   - *Source* : `Deploy from a branch`
-   - *Branch* : `main` et `/ (root)` puis **Save**.
-4. Ton site sera publié sous : `https://<ton-user>.github.io/<nom-du-depot>/`.
+---
 
-> ⚠️ Si tu utilises un thème sombre : le `dark mode` suit les préférences système (`darkMode: 'media'`).
+## 🧠 About Me
 
-## Modifier ensuite
+Cybersecurity Engineer with a Master's degree in Information Systems Security (HETIC, Paris).
+Currently working at **DomPro** on security operations and system administration.
 
-- Contenu principal dans **`app.jsx`** (liens, projets, e‑mail, etc.).
-- Pour ajouter une photo, remplace le bloc "Photo pro ici" par une `<img>`.
-- Pour un **SEO** plus poussé et des **performances** optimisées, on pourra migrer vers **Vite/Next.js** + déploiement via **GitHub Actions**.
+My goal: evolve from **SOC Analyst** toward **RSSI** — combining deep technical expertise with strategic security vision.
 
-## Astuces
+I also build side projects at the intersection of **AI and cybersecurity** to solve real problems I've experienced myself.
 
-- Si l’URL des assets ne charge pas en sous‑dossiers, tu es tranquille ici (pas d’assets buildés).
-- Évite de mettre des secrets, c’est un dépôt public.
+---
+
+## 🛡️ Skills
+
+**Security**
+`SOC` `Blue Team` `Incident Response` `Vulnerability Analysis` `Firewall Administration` `SIEM`
+
+**Cloud & Infrastructure**
+`AWS` `Linux` `Ansible` `Terraform` `GitLab CI/CD`
+
+**Development**
+`Python` `Shell Scripting` `JavaScript` `React`
+
+---
+
+## 🚀 Projects
+
+| Project | Description | Stack |
+|---|---|---|
+| [CVMatch](https://github.com/donal034/cvmatch) | AI tool that analyzes your CV vs a job offer and generates an optimized resume | Python, React, Claude AI |
+| [steve-portfolio](https://donal034.github.io/steve-portfolio) | This portfolio — deployed on GitHub Pages | React, Tailwind CSS |
+
+---
+
+## 📚 Currently
+
+- 🎯 Preparing **CompTIA Security+** certification
+- 🔨 Building **CVMatch** — AI-powered CV optimization tool
+- 📖 Deepening knowledge in **Threat Detection & SIEM**
+
+---
+
+## 📬 Contact
+
+- 💼 [LinkedIn](https://linkedin.com/in/donal-ngahan)
+- 📧 ngahansteve034@gmail.com
+- 🌍 Paris, Île-de-France, France
+
+---
+
+> *"Cybersecurity is not just about protecting systems — it's about protecting people."*
+
+---
+
+## 🛠️ Run Locally
+
+```bash
+git clone https://github.com/donal034/steve-portfolio.git
+cd steve-portfolio
+# Open index.html directly in your browser
+# No build step required — React & Tailwind loaded via CDN
+```
+
+## 🚀 Deploy on GitHub Pages
+
+1. Go to **Settings → Pages**
+2. Source : `Deploy from a branch`
+3. Branch : `main` / `root` → Save
+4. Your site will be live at : `https://donal034.github.io/steve-portfolio`
